@@ -35,6 +35,15 @@ describe("announcement", () => {
     expect(text).not.toContain("—");
   });
 
+  it("uses the compact move format", () => {
+    const down = describeMove("AK", { id: "1", rankBefore: 6, rankAfter: 9, eloBefore: 957.2, eloAfter: 926.0 });
+    const up = describeMove("Sir", { id: "2", rankBefore: 22, rankAfter: 12, eloBefore: 845.7, eloAfter: 903.0 });
+    const same = describeMove("Pi", { id: "3", rankBefore: 1, rankAfter: 1, eloBefore: 1035.0, eloAfter: 1035.0 });
+    expect(down).toBe("AK: #9 (-3), 926.0 (-31.2)");
+    expect(up).toBe("Sir: #12 (+10), 903.0 (+57.3)");
+    expect(same).toBe("Pi: #1 (0), 1035.0 (0.0)");
+  });
+
   it("marks debuts", () => {
     const line = describeMove("Newbie", { id: "9", rankBefore: null, rankAfter: 7, eloBefore: null, eloAfter: 905.12 });
     expect(line).toBe("Newbie: debuts at #7, 905.1");

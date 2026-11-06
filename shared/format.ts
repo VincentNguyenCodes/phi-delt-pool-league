@@ -15,9 +15,8 @@ export function describeMove(name: string, move: Move): string {
     return `${name}: debuts at #${move.rankAfter}, ${move.eloAfter.toFixed(1)}`;
   }
   const shift = move.rankBefore - move.rankAfter;
-  const rank = shift === 0 ? `#${move.rankAfter} (no change)` : `#${move.rankBefore} to #${move.rankAfter} (${signed(shift)})`;
   const delta = move.eloAfter - move.eloBefore;
-  return `${name}: ${rank}, ${move.eloBefore.toFixed(1)} to ${move.eloAfter.toFixed(1)} (${signed(delta, 1)})`;
+  return `${name}: #${move.rankAfter} (${signed(shift)}), ${move.eloAfter.toFixed(1)} (${signed(delta, 1)})`;
 }
 
 export function buildAnnouncement(
