@@ -1,0 +1,18 @@
+name: Weekly GroupMe recap
+
+on:
+  schedule:
+    - cron: "0 22 * * 0"
+  workflow_dispatch:
+
+jobs:
+  recap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger weekly function
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail-with-body -sS -X POST "$SUPABASE_URL/functions/v1/weekly" \
+            -H "x-cron-secret: $CRON_SECRET"
