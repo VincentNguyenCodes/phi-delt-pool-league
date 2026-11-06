@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
       if (!dry) await postToGroupMe(botId!, message);
     } catch (e) {
       if (!dry && !forced) await db.from("bot_posts").delete().eq("key", key);
-      results.push({ task, error: e instanceof Error ? e.message : String(e) });
+      results.push({ task, error: (e as { message?: string }).message ?? String(e) });
     }
   }
 
