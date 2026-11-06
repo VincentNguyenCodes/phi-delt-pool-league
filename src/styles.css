@@ -706,3 +706,63 @@ select {
   cursor: pointer;
   font-family: inherit;
 }
+
+.ladder-grid {
+  grid-template-columns: 46px 40px 1fr 70px 70px 90px 64px 78px;
+}
+
+.ladder-grid .wlt {
+  font-size: 13px;
+}
+
+.ladder-item .row {
+  cursor: pointer;
+}
+
+.ladder-item .row:hover {
+  background: #26382f;
+}
+
+.ladder-item .row.top:hover {
+  background: #444428;
+}
+
+.ladder-more {
+  display: none;
+}
+
+.tap-hint {
+  display: none;
+}
+
+@media (max-width: 620px) {
+  .ladder-grid {
+    grid-template-columns: 34px 32px 1fr 66px 62px;
+  }
+
+  .ladder-grid .extra {
+    display: none;
+  }
+
+  .ladder-more {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: #1a2620;
+    margin: -4px 0 4px;
+    padding: 9px 14px;
+    color: var(--rank);
+    font-size: 13px;
+  }
+
+  .ladder-more b {
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    margin-right: 4px;
+  }
+
+  .tap-hint {
+    display: inline;
+  }
+}

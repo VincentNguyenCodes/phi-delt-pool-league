@@ -17,6 +17,12 @@ export interface Matchup {
   b: number;
 }
 
+export interface Record3 {
+  wins: number;
+  losses: number;
+  ties: number;
+}
+
 export interface Row {
   id: string;
   rank: number;
@@ -31,6 +37,8 @@ export interface Row {
   gameWins: number;
   gameLosses: number;
   matchups: number;
+  singlesRecord: Record3;
+  doublesRecord: Record3;
 }
 
 export interface Leaderboard {
@@ -265,6 +273,8 @@ export function computeLeaderboard(reports: Report[]): Leaderboard {
       gameWins: 0,
       gameLosses: 0,
       matchups: 0,
+      singlesRecord: { wins: 0, losses: 0, ties: 0 },
+      doublesRecord: { wins: 0, losses: 0, ties: 0 },
     });
   });
 
@@ -275,12 +285,20 @@ export function computeLeaderboard(reports: Report[]): Leaderboard {
     const settle = (side: string[], won: boolean, tied: boolean, gw: number, gl: number) => {
       for (const p of side) {
         const row = stats.get(p)!;
+        const format = m.format === "singles" ? row.singlesRecord : row.doublesRecord;
         row.matchups++;
         row.gameWins += gw;
         row.gameLosses += gl;
-        if (tied) row.ties++;
-        else if (won) row.wins++;
-        else row.losses++;
+        if (tied) {
+          row.ties++;
+          format.ties++;
+        } else if (won) {
+          row.wins++;
+          format.wins++;
+        } else {
+          row.losses++;
+          format.losses++;
+        }
       }
     };
     settle(m.sideA, outcome === "A", outcome === "T", m.a, m.b);

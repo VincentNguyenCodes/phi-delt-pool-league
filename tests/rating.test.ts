@@ -66,3 +66,28 @@ describe("records", () => {
     }
   });
 });
+
+describe("records by format", () => {
+  it("singles and doubles records add up to the overall record", () => {
+    for (const row of board.rows) {
+      expect(row.singlesRecord.wins + row.doublesRecord.wins, `${row.id} wins`).toBe(row.wins);
+      expect(row.singlesRecord.losses + row.doublesRecord.losses, `${row.id} losses`).toBe(row.losses);
+      expect(row.singlesRecord.ties + row.doublesRecord.ties, `${row.id} ties`).toBe(row.ties);
+    }
+  });
+
+  it("splits a small ledger correctly", () => {
+    const small = computeLeaderboard([
+      { id: 1, format: "singles", sideA: ["a"], sideB: ["b"], winsA: 2, winsB: 0 },
+      { id: 2, format: "singles", sideA: ["a"], sideB: ["c"], winsA: 1, winsB: 1 },
+      { id: 3, format: "doubles", sideA: ["a", "b"], sideB: ["c", "d"], winsA: 0, winsB: 1 },
+    ]);
+    const row = (id: string) => small.rows.find((r) => r.id === id)!;
+    expect(row("a").singlesRecord).toEqual({ wins: 1, losses: 0, ties: 1 });
+    expect(row("a").doublesRecord).toEqual({ wins: 0, losses: 1, ties: 0 });
+    expect(row("d").singlesRecord).toEqual({ wins: 0, losses: 0, ties: 0 });
+    expect(row("d").doublesRecord).toEqual({ wins: 1, losses: 0, ties: 0 });
+    expect(row("a").gameWins).toBe(3);
+    expect(row("a").gameLosses).toBe(2);
+  });
+});
