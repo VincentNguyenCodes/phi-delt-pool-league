@@ -76,6 +76,18 @@ The schedules live in `.github/workflows/weekly.yml`. They run at both the dayli
 
 The poll is open Saturday 9:00am to Sunday 11:59pm Pacific. The Weekly poll tab only shows while it is open, and the database rejects ballots outside that window. Voters pick their own name, then rank five players. A name can vote once per poll and cannot vote for itself. Ballots are private: the website can only see who has voted, never who they picked. Results are tallied by the Monday function, 5 points for first down to 1 for fifth, and published on the News tab with the next five players as "others receiving votes".
 
+## Usage stats for a resume
+
+The site records one anonymous visit per browser per day: a random id kept in the browser, the page, and the time. There are no names, IPs or accounts, and visits from localhost are ignored. The `visits` table can only be written by the website, never read, so only you can see it.
+
+Print every number plus draft resume bullets with your Supabase secret key:
+
+```
+SUPABASE_URL=... SUPABASE_SERVICE_KEY=... npm run stats
+```
+
+It reports unique visitors, daily traffic, games tracked and games logged on the site, players, polls, ballots, issues published and GroupMe posts. Run it once in a while and write the numbers down, because the visit counter only starts counting once the `0004_visits.sql` migration is applied.
+
 ## Free tier caveats
 
 - Supabase pauses free projects after about a week of no activity. The weekly job keeps it awake.

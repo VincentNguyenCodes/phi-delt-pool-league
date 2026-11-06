@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { NavLink, Route, Routes } from "react-router-dom";
 import Leaderboard from "./pages/Leaderboard";
 import LogGame from "./pages/LogGame";
@@ -5,9 +6,13 @@ import News from "./pages/News";
 import NewPlayer from "./pages/NewPlayer";
 import Poll from "./pages/Poll";
 import { usePollStatus } from "./lib/usePollStatus";
+import { logVisit } from "./lib/visit";
 
 export default function App() {
   const poll = usePollStatus();
+  useEffect(() => {
+    logVisit();
+  }, []);
   return (
     <div className="shell">
       <nav className="nav">
