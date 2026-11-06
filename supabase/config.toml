@@ -1,0 +1,7 @@
+project_id = "phi-delt-pool-league"
+
+[functions.announce]
+verify_jwt = true
+
+[functions.weekly]
+verify_jwt = false
