@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
-    "ml-matrix": "^6.15.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.5"
