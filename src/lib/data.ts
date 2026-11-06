@@ -1,5 +1,6 @@
 import handoffMarkdown from "../../data/phi-delt-pool-website-handoff.md?raw";
 import { parseHandoff } from "../../shared/handoff";
+import type { Issue } from "../../shared/news";
 import type { Format, Report } from "../../shared/rating";
 import { supabase } from "./supabase";
 
@@ -129,26 +130,34 @@ export async function announce(reportId: number): Promise<void> {
   }
 }
 
-const offlineVotes = new Map<string, Map<string, number[]>>();
+const offlineBallots = new Map<string, Map<number, number[]>>();
 
-export async function fetchVotes(week: string): Promise<number[][]> {
-  if (!supabase) return [...(offlineVotes.get(week)?.values() ?? [])];
-  const res = await supabase.from("poll_votes").select("picks").eq("week", week);
+export async function fetchVoters(poll: string): Promise<number[]> {
+  if (!supabase) return [...(offlineBallots.get(poll)?.keys() ?? [])];
+  const res = await supabase.from("poll_votes").select("voter_id").eq("poll", poll);
   if (res.error) throw res.error;
-  return res.data.map((v) => v.picks as number[]);
+  return res.data.map((v) => v.voter_id as number);
 }
 
-export async function submitVote(week: string, token: string, picks: number[]): Promise<void> {
+export async function submitBallot(poll: string, voterId: number, picks: number[]): Promise<void> {
   if (!supabase) {
-    const bucket = offlineVotes.get(week) ?? new Map<string, number[]>();
-    if (bucket.has(token)) throw new Error("You already voted this week.");
-    bucket.set(token, picks);
-    offlineVotes.set(week, bucket);
+    const bucket = offlineBallots.get(poll) ?? new Map<number, number[]>();
+    if (bucket.has(voterId)) throw new Error("That name has already voted.");
+    bucket.set(voterId, picks);
+    offlineBallots.set(poll, bucket);
     return;
   }
-  const res = await supabase.from("poll_votes").insert({ week, voter_token: token, picks });
+  const res = await supabase.from("poll_votes").insert({ poll, voter_id: voterId, picks });
   if (res.error) {
-    if (res.error.code === "23505") throw new Error("You already voted this week.");
+    if (res.error.code === "23505") throw new Error("That name has already voted.");
+    if (res.error.code === "42501") throw new Error("The poll is closed.");
     throw res.error;
   }
+}
+
+export async function fetchIssues(): Promise<Issue[]> {
+  if (!supabase) return [];
+  const res = await supabase.from("issues").select("payload").order("week_start", { ascending: false }).limit(30);
+  if (res.error) throw res.error;
+  return res.data.map((r) => r.payload as Issue);
 }

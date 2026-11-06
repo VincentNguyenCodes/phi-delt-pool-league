@@ -505,3 +505,115 @@ em.down {
     grid-template-columns: 34px 32px 1fr 62px;
   }
 }
+
+.masthead-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.issue-date {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.archive {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+select {
+  background: var(--panel);
+  color: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.section {
+  margin-top: 28px;
+}
+
+.section-title {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  margin: 0 0 12px;
+}
+
+.section-title.sub {
+  margin: 18px 0 10px 12px;
+  color: var(--muted);
+}
+
+.poll-news-head,
+.poll-news {
+  grid-template-columns: 46px 40px 1fr 70px 56px;
+}
+
+.row.muted {
+  background: #1a2620;
+  height: 34px;
+}
+
+.row.muted .player {
+  font-weight: 600;
+  color: var(--rank);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.card {
+  background: #1c2822;
+  border-top: 3px solid #6b7a52;
+  padding: 18px 18px 20px;
+  min-height: 150px;
+}
+
+.card h4 {
+  margin: 0 0 14px;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.card .headline {
+  margin: 0 0 12px;
+  font-size: 19px;
+  line-height: 1.25;
+  color: var(--cream);
+}
+
+.card .detail {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+@media (max-width: 620px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .poll-news-head,
+  .poll-news {
+    grid-template-columns: 34px 32px 1fr 56px 44px;
+  }
+}

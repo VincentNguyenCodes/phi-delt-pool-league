@@ -3,7 +3,7 @@ import { buildAnnouncement, describeMove } from "../shared/format";
 import { chunkMessage } from "../shared/groupme";
 import { pollWeek, tally } from "../shared/poll";
 import { computeLeaderboard, diffLeaderboards, type Report } from "../shared/rating";
-import { formatRecap, weeklyStats, type DatedReport } from "../shared/stats";
+import { weeklyStats, type DatedReport } from "../shared/stats";
 
 const names = new Map([
   ["1", "AK"],
@@ -105,12 +105,12 @@ describe("weekly stats", () => {
 
   it("handles an empty week", () => {
     const stats = weeklyStats(ledger, now + day);
-    expect(formatRecap(stats, names, "Nov 2 to Nov 8")).toContain("No games logged");
+    expect(stats.reports).toBe(0);
+    expect(stats.mostWins).toBeNull();
   });
 
-  it("formats a recap without em dashes", () => {
-    const text = formatRecap(weeklyStats(ledger, now - 7 * day), names, "Nov 2 to Nov 8");
-    expect(text).toContain("Most wins: Pi (4)");
-    expect(text).not.toContain("—");
+  it("respects the end of the window", () => {
+    const stats = weeklyStats(ledger, now - 7 * day, now - 1.5 * day);
+    expect(stats.reports).toBe(2);
   });
 });
