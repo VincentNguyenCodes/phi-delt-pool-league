@@ -26,7 +26,8 @@ Deno.serve(async (req) => {
   const recent = await db
     .from("reports")
     .select("id", { count: "exact", head: true })
-    .gte("announced_at", hourAgo);
+    .not("announced_at", "is", null)
+    .gte("created_at", hourAgo);
   if (recent.error) return json({ error: recent.error.message }, 500);
   if ((recent.count ?? 0) >= HOURLY_LIMIT) return json({ skipped: "rate limited" }, 429);
 
@@ -56,7 +57,6 @@ Deno.serve(async (req) => {
       report.wins_b,
       moves,
       names,
-      Deno.env.get("SITE_URL"),
     );
     await postToGroupMe(botId, text);
     return json({ posted: true });

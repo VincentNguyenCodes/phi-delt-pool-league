@@ -4,7 +4,7 @@ import type { DatedReport } from "../../shared/stats.ts";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, x-supabase-api-version, apikey, content-type, x-cron-secret",
 };
 
 export function adminClient(): SupabaseClient {
