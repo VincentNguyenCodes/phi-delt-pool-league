@@ -71,8 +71,17 @@ describe("poll", () => {
       [2, 1, 3, 4, 5],
       [2, 3, 1, 4, 5],
     ]);
-    expect(rows[0]).toEqual({ id: 2, points: 5 + 4 + 5, firstPlace: 2 });
+    expect(rows[0]).toEqual({ id: 2, points: 5 + 4 + 5, places: [2, 1, 0, 0, 0] });
     expect(rows[1].id).toBe(1);
+  });
+
+  it("breaks point ties by first place votes, then second place votes", () => {
+    const rows = tally([
+      [1, 3, 2, 4, 5],
+      [3, 4, 2, 5, 1],
+    ]);
+    expect(rows.map((r) => r.id)).toEqual([3, 1, 4, 2, 5]);
+    expect(rows.slice(1, 4).map((r) => r.points)).toEqual([6, 6, 6]);
   });
 
   it("rolls the poll week over on Sunday", () => {

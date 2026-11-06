@@ -25,7 +25,11 @@ function PollRows({ rows, start, muted }: { rows: PollRow[]; start: number; mute
           <span className="rank">{String(start + i).padStart(2, "0")}</span>
           <Shield name={r.name} />
           <span className="player">{r.name.toUpperCase()}</span>
-          <span className="wlt right">{r.firstPlace} first</span>
+          {r.places.map((n, k) => (
+            <span key={k} className="votes">
+              {n}
+            </span>
+          ))}
           <span className="elo right">{r.points}</span>
         </div>
       ))}
@@ -94,7 +98,11 @@ export default function News() {
                   <span>RANK</span>
                   <span />
                   <span>PLAYER</span>
-                  <span className="right">FIRST</span>
+                  {["1ST", "2ND", "3RD", "4TH", "5TH"].map((h) => (
+                    <span key={h} className="votes">
+                      {h}
+                    </span>
+                  ))}
                   <span className="right">PTS</span>
                 </div>
                 <PollRows rows={issue.poll.top} start={1} />
@@ -108,7 +116,7 @@ export default function News() {
             )}
             <p className="fineprint">
               {issue.poll.ballots} ballots. Each ballot ranks five players: 5 points for first down to 1 for fifth. Ballots are
-              private. Ties go to the player with more first place votes.
+              private. Ties go to the player with more first place votes, then second place votes.
             </p>
           </section>
 

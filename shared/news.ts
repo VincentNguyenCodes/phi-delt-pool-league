@@ -13,7 +13,7 @@ export interface PollRow {
   id: string;
   name: string;
   points: number;
-  firstPlace: number;
+  places: number[];
 }
 
 export interface Issue {
@@ -94,7 +94,7 @@ export function buildIssue(input: IssueInput): Issue {
     id: String(t.id),
     name: name(String(t.id)),
     points: t.points,
-    firstPlace: t.firstPlace,
+    places: t.places,
   }));
   const poll = { id: input.pollId, ballots: input.votes.length, top: rows.slice(0, 5), others: rows.slice(5, 10) };
 

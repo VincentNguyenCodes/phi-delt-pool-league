@@ -1,7 +1,7 @@
 export interface Tally {
   id: number;
   points: number;
-  firstPlace: number;
+  places: number[];
 }
 
 export function pollWeek(date: Date): string {
@@ -17,11 +17,17 @@ export function tally(votes: number[][]): Tally[] {
   const map = new Map<number, Tally>();
   for (const picks of votes) {
     picks.forEach((id, i) => {
-      const t = map.get(id) ?? { id, points: 0, firstPlace: 0 };
+      const t = map.get(id) ?? { id, points: 0, places: Array(picks.length).fill(0) };
       t.points += picks.length - i;
-      if (i === 0) t.firstPlace++;
+      t.places[i]++;
       map.set(id, t);
     });
   }
-  return [...map.values()].sort((a, b) => b.points - a.points || b.firstPlace - a.firstPlace || a.id - b.id);
+  return [...map.values()].sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    for (let i = 0; i < a.places.length; i++) {
+      if (b.places[i] !== a.places[i]) return b.places[i] - a.places[i];
+    }
+    return a.id - b.id;
+  });
 }

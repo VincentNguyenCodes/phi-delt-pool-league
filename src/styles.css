@@ -28,7 +28,9 @@ body {
 
 .nav {
   display: flex;
-  gap: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -40,6 +42,20 @@ body {
   text-decoration: none;
   padding-bottom: 4px;
   border-bottom: 2px solid transparent;
+}
+
+.nav a.add-new {
+  margin-left: auto;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  padding: 7px 12px;
+  font-weight: 700;
+}
+
+.nav a.add-new.active {
+  background: var(--gold);
+  color: #1b2119;
 }
 
 .nav a.active {
@@ -431,25 +447,6 @@ input:focus {
   margin: 0;
 }
 
-.add-player {
-  margin-top: 22px;
-}
-
-.add-row {
-  display: flex;
-  gap: 8px;
-}
-
-.link {
-  background: none;
-  border: 0;
-  color: var(--gold);
-  font-size: 14px;
-  cursor: pointer;
-  padding: 0;
-  font-family: inherit;
-}
-
 .moves {
   display: grid;
   gap: 6px;
@@ -559,7 +556,18 @@ select {
 
 .poll-news-head,
 .poll-news {
-  grid-template-columns: 46px 40px 1fr 70px 56px;
+  grid-template-columns: 46px 40px 1fr repeat(5, 36px) 52px;
+  column-gap: 4px;
+}
+
+.votes {
+  text-align: center;
+  color: var(--rank);
+  font-size: 14px;
+}
+
+.poll-news-head .votes {
+  font-size: 10px;
 }
 
 .row.muted {
@@ -614,6 +622,25 @@ select {
 
   .poll-news-head,
   .poll-news {
-    grid-template-columns: 34px 32px 1fr 56px 44px;
+    grid-template-columns: 26px 26px 1fr repeat(5, 22px) 34px;
+    column-gap: 3px;
+    padding: 0 6px;
+  }
+
+  .poll-news .shield {
+    width: 22px;
+    height: 26px;
+  }
+
+  .poll-news .player {
+    font-size: 12px;
+  }
+
+  .votes {
+    font-size: 12px;
+  }
+
+  .poll-news-head .votes {
+    font-size: 8px;
   }
 }
