@@ -31,6 +31,7 @@ const rows = handoff.reports.map((r) => ({
   side_b: r.sideB.map((n) => ids.get(n)),
   wins_a: r.winsA,
   wins_b: r.winsB,
+  created_at: "2026-01-01T00:00:00Z",
   announced_at: new Date().toISOString(),
 }));
 
