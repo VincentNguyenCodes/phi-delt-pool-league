@@ -28,7 +28,7 @@ async function call<T>(key: string, body: object): Promise<T> {
 
 export const adminApi = {
   check: (key: string) => call<{ ok: boolean }>(key, { action: "check" }),
-  stats: (key: string) => call<{ stats: ProjectStats; bullets: string[] }>(key, { action: "stats" }),
+  stats: (key: string) => call<{ stats: ProjectStats }>(key, { action: "stats" }),
   games: (key: string) => call<{ games: AdminGame[] }>(key, { action: "games" }),
   deleteGame: (key: string, id: number) => call<{ deleted: number }>(key, { action: "delete_game", id }),
 };

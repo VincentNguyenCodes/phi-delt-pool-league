@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resumeBullets, summarize } from "../shared/projectStats";
+import { summarize } from "../shared/projectStats";
 
 const day = 86400000;
 const now = Date.parse("2026-11-20T12:00:00Z");
@@ -83,9 +83,5 @@ describe("project stats", () => {
     expect(empty.uniqueVisitors).toBe(0);
     expect(empty.avgDailyVisitors).toBe(0);
     expect(empty.gamesLive).toBe(0);
-  });
-
-  it("writes bullets without em dashes", () => {
-    for (const b of resumeBullets(s)) expect(b).not.toContain("—");
   });
 });

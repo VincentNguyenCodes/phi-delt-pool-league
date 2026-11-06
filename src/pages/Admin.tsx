@@ -41,9 +41,8 @@ function Stat({ label, value, note }: { label: string; value: string | number; n
 }
 
 function Overview({ adminKey, onDenied }: { adminKey: string; onDenied: () => void }) {
-  const [data, setData] = useState<{ stats: ProjectStats; bullets: string[] } | null>(null);
+  const [data, setData] = useState<{ stats: ProjectStats } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     adminApi
@@ -59,15 +58,6 @@ function Overview({ adminKey, onDenied }: { adminKey: string; onDenied: () => vo
   if (!data) return <p className="notice">Loading stats...</p>;
   const s = data.stats;
 
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(data.bullets.map((b) => `- ${b}`).join("\n"));
-      setCopied(true);
-    } catch {
-      setCopied(false);
-    }
-  };
-
   return (
     <>
       <h3 className="section-title">VISITORS</h3>
@@ -81,7 +71,7 @@ function Overview({ adminKey, onDenied }: { adminKey: string; onDenied: () => vo
       <h3 className="section-title spaced">GAMES AND PLAYERS</h3>
       <div className="cards">
         <Stat label="GAMES TRACKED" value={s.gamesAllTime} note={`${s.reportsAllTime} reports, ${s.matchupsAllTime} unique matchups`} />
-        <Stat label="GAMES LOGGED ON THE SITE" value={s.gamesLive} note={`${s.reportsLive} reports in ${s.daysLive} days`} />
+        <Stat label="GAMES LOGGED ON THE SITE" value={s.gamesLive} note={`${s.reportsLive} reports in ${s.daysLive} ${s.daysLive === 1 ? "day" : "days"}`} />
         <Stat label="PLAYERS ON THE LADDER" value={s.playersOnLadder} note={`${s.playersWhoPlayedLive} played on the site`} />
         <Stat label="PLAYERS ADDED ON THE SITE" value={s.playersAdded} />
       </div>
@@ -92,19 +82,6 @@ function Overview({ adminKey, onDenied }: { adminKey: string; onDenied: () => vo
         <Stat label="BALLOTS CAST" value={s.ballots} note={`${s.uniqueVoters} unique voters`} />
         <Stat label="WEEKLY ISSUES PUBLISHED" value={s.issues} />
         <Stat label="GROUPME POSTS SENT" value={s.groupMePosts} />
-      </div>
-
-      <h3 className="section-title spaced">DRAFT RESUME BULLETS</h3>
-      <p className="fineprint">Edit the wording and keep only numbers you can explain.</p>
-      <ul className="bullets">
-        {data.bullets.map((b) => (
-          <li key={b}>{b}</li>
-        ))}
-      </ul>
-      <div className="actions">
-        <button className="secondary" onClick={copy}>
-          {copied ? "Copied" : "Copy bullets"}
-        </button>
       </div>
     </>
   );

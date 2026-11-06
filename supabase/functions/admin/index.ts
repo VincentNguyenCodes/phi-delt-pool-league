@@ -1,5 +1,5 @@
 import { safeEqual, type AdminGame } from "../../../shared/admin.ts";
-import { resumeBullets, summarize } from "../../../shared/projectStats.ts";
+import { summarize } from "../../../shared/projectStats.ts";
 import { adminClient, allRows, corsHeaders, json, loadNames, loadReports } from "../_shared.ts";
 
 const SEEDED_PLAYERS = 39;
@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
         botPosts: botPosts.count ?? 0,
         announcedLive: announced.count ?? 0,
       });
-      return json({ stats, bullets: resumeBullets(stats) });
+      return json({ stats });
     }
 
     if (body.action === "games") {

@@ -80,7 +80,7 @@ The poll is open Saturday 9:00am to Sunday 11:59pm Pacific. The Weekly poll tab 
 
 Open `/#/admin` on the site (there is no link to it) and enter the admin password. It has two tabs:
 
-- **Overview:** unique visitors, daily traffic, games tracked and logged on the site, players, polls, ballots, issues published, GroupMe posts, plus draft resume bullets you can copy.
+- **Overview:** unique visitors, daily traffic, games tracked and logged on the site, players, polls, ballots, issues published, GroupMe posts.
 - **Games:** the latest 300 games with a filter and a delete button. Deleting a game recalculates the ladder. A GroupMe post that already went out cannot be unsent.
 
 The password is the `ADMIN_KEY` function secret, checked on the server by the `admin` edge function. The browser keeps it only for the tab session. Set or rotate it with:

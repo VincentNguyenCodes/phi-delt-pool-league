@@ -71,14 +71,3 @@ export function summarize(input: StatsInput): ProjectStats {
     avgDailyVisitors: daily.length ? Math.round((daily.reduce((a, b) => a + b, 0) / daily.length) * 10) / 10 : 0,
   };
 }
-
-export function resumeBullets(s: ProjectStats): string[] {
-  const bullets = [
-    `Built and shipped a full-stack league ranking web app (React, TypeScript, Supabase Postgres) used by ${s.uniqueVisitors || "N"} unique visitors, tracking ${s.gamesAllTime} games across ${s.playersOnLadder} players.`,
-    `Implemented a Bayesian logistic rating model with Laplace-approximated uncertainty, refit from the full game history on every result and verified against a reference dataset.`,
-    `Automated league communication with Supabase Edge Functions and scheduled GitHub Actions: a GroupMe bot posts every logged game with rank and rating changes, and publishes a weekly poll and stats issue.`,
-    `Designed a time-windowed, private-ballot voting system enforced with Postgres row-level security, collecting ${s.ballots} ballots from ${s.uniqueVoters} voters across ${s.polls} polls.`,
-    `Deployed on free-tier infrastructure (GitHub Pages, Supabase, GitHub Actions) with CI that runs the test suite before every release.`,
-  ];
-  return bullets;
-}

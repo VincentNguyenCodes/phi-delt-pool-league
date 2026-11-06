@@ -649,18 +649,6 @@ select {
   margin-top: 26px;
 }
 
-.bullets {
-  margin: 0 0 6px;
-  padding-left: 18px;
-  color: var(--cream);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.bullets li {
-  margin-bottom: 8px;
-}
-
 .game-list {
   margin-top: 14px;
   display: grid;
