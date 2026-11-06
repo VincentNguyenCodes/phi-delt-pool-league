@@ -644,3 +644,77 @@ select {
     font-size: 8px;
   }
 }
+
+.section-title.spaced {
+  margin-top: 26px;
+}
+
+.bullets {
+  margin: 0 0 6px;
+  padding-left: 18px;
+  color: var(--cream);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.bullets li {
+  margin-bottom: 8px;
+}
+
+.game-list {
+  margin-top: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.game-row {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  background: var(--panel);
+  padding: 10px 14px;
+}
+
+.game-id {
+  color: var(--rank);
+  font-weight: 800;
+}
+
+.game-text {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.game-meta {
+  display: block;
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.danger {
+  background: transparent;
+  color: #e58f6b;
+  border: 1px solid #e58f6b;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.danger:hover {
+  background: #e58f6b;
+  color: #1b2119;
+}
+
+.link-button {
+  background: none;
+  border: 0;
+  color: var(--gold);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}

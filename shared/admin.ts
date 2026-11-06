@@ -1,0 +1,20 @@
+export function safeEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const x = enc.encode(a);
+  const y = enc.encode(b);
+  let diff = x.length ^ y.length;
+  const n = Math.max(x.length, y.length);
+  for (let i = 0; i < n; i++) diff |= (x[i] ?? 0) ^ (y[i] ?? 0);
+  return diff === 0;
+}
+
+export interface AdminGame {
+  id: number;
+  format: "singles" | "doubles";
+  sideA: string[];
+  sideB: string[];
+  winsA: number;
+  winsB: number;
+  createdAt: string;
+  announcedAt: string | null;
+}

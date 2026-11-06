@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { NavLink, Route, Routes } from "react-router-dom";
 import Leaderboard from "./pages/Leaderboard";
+import Admin from "./pages/Admin";
 import LogGame from "./pages/LogGame";
 import News from "./pages/News";
 import NewPlayer from "./pages/NewPlayer";
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/poll" element={<Poll />} />
         <Route path="/news" element={<News />} />
         <Route path="/new-player" element={<NewPlayer />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
       <footer className="footer">
         <span>PHI DELT / EVERY GAME HAS A STORY</span>

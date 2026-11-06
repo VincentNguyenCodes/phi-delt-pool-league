@@ -76,17 +76,21 @@ The schedules live in `.github/workflows/weekly.yml`. They run at both the dayli
 
 The poll is open Saturday 9:00am to Sunday 11:59pm Pacific. The Weekly poll tab only shows while it is open, and the database rejects ballots outside that window. Voters pick their own name, then rank five players. A name can vote once per poll and cannot vote for itself. Ballots are private: the website can only see who has voted, never who they picked. Results are tallied by the Monday function, 5 points for first down to 1 for fifth, and published on the News tab with the next five players as "others receiving votes".
 
-## Usage stats for a resume
+## Admin dashboard
 
-The site records one anonymous visit per browser per day: a random id kept in the browser, the page, and the time. There are no names, IPs or accounts, and visits from localhost are ignored. The `visits` table can only be written by the website, never read, so only you can see it.
+Open `/#/admin` on the site (there is no link to it) and enter the admin password. It has two tabs:
 
-Print every number plus draft resume bullets with your Supabase secret key:
+- **Overview:** unique visitors, daily traffic, games tracked and logged on the site, players, polls, ballots, issues published, GroupMe posts, plus draft resume bullets you can copy.
+- **Games:** the latest 300 games with a filter and a delete button. Deleting a game recalculates the ladder. A GroupMe post that already went out cannot be unsent.
+
+The password is the `ADMIN_KEY` function secret, checked on the server by the `admin` edge function. The browser keeps it only for the tab session. Set or rotate it with:
 
 ```
-SUPABASE_URL=... SUPABASE_SERVICE_KEY=... npm run stats
+supabase secrets set ADMIN_KEY=your-long-random-password
+supabase functions deploy admin --no-verify-jwt
 ```
 
-It reports unique visitors, daily traffic, games tracked and games logged on the site, players, polls, ballots, issues published and GroupMe posts. Run it once in a while and write the numbers down, because the visit counter only starts counting once the `0004_visits.sql` migration is applied.
+Visitors are recorded as one anonymous visit per browser per day: a random id kept in the browser, the page and the time. There are no names, IPs or accounts, and visits from localhost are ignored. The `visits` table can only be written by the website, never read. It needs the `0004_visits.sql` migration, and counting starts once that is applied.
 
 ## Free tier caveats
 

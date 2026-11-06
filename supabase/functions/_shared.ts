@@ -4,7 +4,7 @@ import type { DatedReport } from "../../shared/stats.ts";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, x-supabase-api-version, apikey, content-type, x-cron-secret",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, x-supabase-api-version, apikey, content-type, x-cron-secret, x-admin-key",
 };
 
 export function adminClient(): SupabaseClient {
@@ -49,6 +49,17 @@ export async function loadReports(db: SupabaseClient, upToId?: number): Promise<
     if (res.data.length < 1000) break;
   }
   return out;
+}
+
+export async function allRows<T>(db: SupabaseClient, table: string, columns: string): Promise<T[]> {
+  const rows: T[] = [];
+  for (let from = 0; ; from += 1000) {
+    const res = await db.from(table).select(columns).order("id").range(from, from + 999);
+    if (res.error) throw res.error;
+    rows.push(...(res.data as unknown as T[]));
+    if (res.data.length < 1000) break;
+  }
+  return rows;
 }
 
 export type { Report };
