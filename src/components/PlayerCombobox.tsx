@@ -7,14 +7,12 @@ interface Props {
   value: Player | null;
   excluded: number[];
   onChange: (player: Player | null) => void;
-  onCreate?: (name: string) => Promise<Player>;
 }
 
-export default function PlayerCombobox({ label, players, value, excluded, onChange, onCreate }: Props) {
+export default function PlayerCombobox({ label, players, value, excluded, onChange }: Props) {
   const [text, setText] = useState(value?.name ?? "");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
-  const [busy, setBusy] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const listId = useId();
 
@@ -41,9 +39,7 @@ export default function PlayerCombobox({ label, players, value, excluded, onChan
     return [...starts, ...words].slice(0, 6);
   }, [players, excluded, query]);
 
-  const exact = players.some((p) => p.name.toLowerCase() === query);
-  const canCreate = Boolean(onCreate) && query.length > 0 && !exact;
-  const optionCount = matches.length + (canCreate ? 1 : 0);
+  const optionCount = matches.length;
 
   const choose = (player: Player) => {
     onChange(player);
@@ -51,18 +47,8 @@ export default function PlayerCombobox({ label, players, value, excluded, onChan
     setOpen(false);
   };
 
-  const create = async () => {
-    setBusy(true);
-    try {
-      if (onCreate) choose(await onCreate(text));
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const pickActive = () => {
     if (active < matches.length) choose(matches[active]);
-    else if (canCreate) create();
   };
 
   const onKey = (e: React.KeyboardEvent) => {
@@ -94,7 +80,6 @@ export default function PlayerCombobox({ label, players, value, excluded, onChan
         aria-autocomplete="list"
         autoComplete="off"
         autoCapitalize="words"
-        disabled={busy}
         onChange={(e) => {
           setText(e.target.value);
           if (value) onChange(null);
@@ -121,20 +106,6 @@ export default function PlayerCombobox({ label, players, value, excluded, onChan
               {p.name}
             </li>
           ))}
-          {canCreate && (
-            <li
-              role="option"
-              aria-selected={active === matches.length}
-              className={active === matches.length ? "combo-option add active" : "combo-option add"}
-              onMouseEnter={() => setActive(matches.length)}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                create();
-              }}
-            >
-              Add "{text.trim()}" as a new player
-            </li>
-          )}
         </ul>
       )}
     </div>

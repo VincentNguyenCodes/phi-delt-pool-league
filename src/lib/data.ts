@@ -2,6 +2,7 @@ import handoffMarkdown from "../../data/phi-delt-pool-website-handoff.md?raw";
 import { parseHandoff } from "../../shared/handoff";
 import type { Issue } from "../../shared/news";
 import type { Format, Report } from "../../shared/rating";
+import { cleanName, findExisting } from "./names";
 import { supabase } from "./supabase";
 
 export interface Player {
@@ -76,10 +77,10 @@ export async function fetchLedger(): Promise<Ledger> {
 }
 
 export async function addPlayer(name: string): Promise<Player> {
-  const clean = name.trim().replace(/\s+/g, " ");
+  const clean = cleanName(name);
   if (!supabase) {
     const l = offlineLedger();
-    const found = l.players.find((p) => p.name.toLowerCase() === clean.toLowerCase());
+    const found = findExisting(clean, l.players);
     if (found) return found;
     const player = { id: Math.max(0, ...l.players.map((p) => p.id)) + 1, name: clean };
     l.players.push(player);

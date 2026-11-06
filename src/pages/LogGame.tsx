@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { computeLeaderboard, diffLeaderboards, type Format, type Move } from "../../shared/rating";
 import PlayerCombobox from "../components/PlayerCombobox";
-import { addPlayer, announce, logGame, type Player } from "../lib/data";
+import { announce, logGame, type Player } from "../lib/data";
 import { useLedger } from "../lib/useLedger";
 
 type Slot = Player | null;
@@ -18,20 +18,12 @@ export default function LogGame() {
   const [problem, setProblem] = useState<string | null>(null);
   const [moves, setMoves] = useState<Move[] | null>(null);
   const [summary, setSummary] = useState("");
-  const [newName, setNewName] = useState("");
-  const [showAdd, setShowAdd] = useState(false);
 
   const size = format === "singles" ? 1 : 2;
   const winnerSlots = winners.slice(0, size);
   const loserSlots = losers.slice(0, size);
   const chosen = [...winnerSlots, ...loserSlots].filter((p): p is Player => p !== null).map((p) => p.id);
   const players = ledger?.players ?? [];
-
-  const create = async (name: string) => {
-    const player = await addPlayer(name);
-    await refresh();
-    return player;
-  };
 
   const setSlot = (list: Slot[], set: (s: Slot[]) => void, i: number) => (p: Slot) => {
     const next = [...list];
@@ -90,17 +82,6 @@ export default function LogGame() {
       setProblem(e instanceof Error ? e.message : "Could not save the game.");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const submitNew = async () => {
-    if (!newName.trim()) return;
-    try {
-      await create(newName);
-      setNewName("");
-      setShowAdd(false);
-    } catch (e) {
-      setProblem(e instanceof Error ? e.message : "Could not add the player.");
     }
   };
 
@@ -179,7 +160,6 @@ export default function LogGame() {
             value={p}
             excluded={chosen.filter((id) => id !== p?.id)}
             onChange={setSlot(winners, setWinners, i)}
-            onCreate={create}
           />
         ))}
       </section>
@@ -196,7 +176,6 @@ export default function LogGame() {
             value={p}
             excluded={chosen.filter((id) => id !== p?.id)}
             onChange={setSlot(losers, setLosers, i)}
-            onCreate={create}
           />
         ))}
       </section>
@@ -222,26 +201,6 @@ export default function LogGame() {
         <Link className="secondary" to="/">
           Cancel
         </Link>
-      </div>
-
-      <div className="add-player">
-        {showAdd ? (
-          <div className="add-row">
-            <input
-              value={newName}
-              placeholder="New player name"
-              onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submitNew()}
-            />
-            <button className="secondary" onClick={submitNew}>
-              Add
-            </button>
-          </div>
-        ) : (
-          <button className="link" onClick={() => setShowAdd(true)}>
-            + Add a new player
-          </button>
-        )}
       </div>
     </main>
   );
