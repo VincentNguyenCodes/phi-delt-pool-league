@@ -128,3 +128,27 @@ export async function announce(reportId: number): Promise<void> {
     return;
   }
 }
+
+const offlineVotes = new Map<string, Map<string, number[]>>();
+
+export async function fetchVotes(week: string): Promise<number[][]> {
+  if (!supabase) return [...(offlineVotes.get(week)?.values() ?? [])];
+  const res = await supabase.from("poll_votes").select("picks").eq("week", week);
+  if (res.error) throw res.error;
+  return res.data.map((v) => v.picks as number[]);
+}
+
+export async function submitVote(week: string, token: string, picks: number[]): Promise<void> {
+  if (!supabase) {
+    const bucket = offlineVotes.get(week) ?? new Map<string, number[]>();
+    if (bucket.has(token)) throw new Error("You already voted this week.");
+    bucket.set(token, picks);
+    offlineVotes.set(week, bucket);
+    return;
+  }
+  const res = await supabase.from("poll_votes").insert({ week, voter_token: token, picks });
+  if (res.error) {
+    if (res.error.code === "23505") throw new Error("You already voted this week.");
+    throw res.error;
+  }
+}

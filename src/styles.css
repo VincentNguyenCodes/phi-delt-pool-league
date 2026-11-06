@@ -493,3 +493,15 @@ em.up {
 em.down {
   color: #e58f6b;
 }
+
+.poll-head,
+.poll-row {
+  grid-template-columns: 46px 40px 1fr 84px;
+}
+
+@media (max-width: 520px) {
+  .poll-head,
+  .poll-row {
+    grid-template-columns: 34px 32px 1fr 62px;
+  }
+}
