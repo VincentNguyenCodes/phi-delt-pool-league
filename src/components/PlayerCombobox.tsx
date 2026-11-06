@@ -7,7 +7,7 @@ interface Props {
   value: Player | null;
   excluded: number[];
   onChange: (player: Player | null) => void;
-  onCreate: (name: string) => Promise<Player>;
+  onCreate?: (name: string) => Promise<Player>;
 }
 
 export default function PlayerCombobox({ label, players, value, excluded, onChange, onCreate }: Props) {
@@ -42,7 +42,7 @@ export default function PlayerCombobox({ label, players, value, excluded, onChan
   }, [players, excluded, query]);
 
   const exact = players.some((p) => p.name.toLowerCase() === query);
-  const canCreate = query.length > 0 && !exact;
+  const canCreate = Boolean(onCreate) && query.length > 0 && !exact;
   const optionCount = matches.length + (canCreate ? 1 : 0);
 
   const choose = (player: Player) => {
@@ -54,7 +54,7 @@ export default function PlayerCombobox({ label, players, value, excluded, onChan
   const create = async () => {
     setBusy(true);
     try {
-      choose(await onCreate(text));
+      if (onCreate) choose(await onCreate(text));
     } finally {
       setBusy(false);
     }

@@ -1,18 +1,39 @@
-name: Weekly GroupMe recap
+name: Weekly GroupMe posts
 
 on:
   schedule:
-    - cron: "0 22 * * 0"
+    - cron: "0 16,17 * * 6"
+    - cron: "0 1,2 * * 1"
+    - cron: "30 18,19 * * 1"
   workflow_dispatch:
+    inputs:
+      task:
+        description: "Force a task (leave empty to run whatever is due)"
+        type: choice
+        default: ""
+        options:
+          - ""
+          - poll-open
+          - poll-closing
+          - issue
+      dry:
+        description: "Dry run, post nothing"
+        type: boolean
+        default: true
 
 jobs:
-  recap:
+  run:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger weekly function
+      - name: Trigger scheduled function
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          TASK: ${{ inputs.task }}
+          DRY: ${{ inputs.dry }}
         run: |
-          curl --fail-with-body -sS -X POST "$SUPABASE_URL/functions/v1/weekly" \
+          query=""
+          if [ -n "$TASK" ]; then query="task=$TASK"; fi
+          if [ "$DRY" = "true" ]; then query="$query&dry=1"; fi
+          curl --fail-with-body -sS -X POST "$SUPABASE_URL/functions/v1/weekly?$query" \
             -H "x-cron-secret: $CRON_SECRET"

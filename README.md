@@ -31,7 +31,7 @@ With no `.env.local`, the app runs in offline mode using the 193 seeded games fr
 ### 1. Supabase (free)
 
 1. Create a project at supabase.com.
-2. In the SQL editor, run `supabase/migrations/0001_init.sql`.
+2. In the SQL editor, run `supabase/migrations/0001_init.sql`, then `supabase/migrations/0002_poll_window_and_issues.sql`.
 3. Copy the project URL, the `anon` key and the `service_role` key from Project Settings, API.
 4. Seed the 39 players and 193 games:
    ```
@@ -55,7 +55,13 @@ supabase functions deploy announce
 supabase functions deploy weekly --no-verify-jwt
 ```
 
-`announce` posts each logged game with rank and Elo moves. `weekly` posts last week's poll results, the weekly recap, and the new poll link. Check it without posting by calling it with `?dry=1`.
+`announce` posts each logged game with rank and Elo moves. `weekly` runs from GitHub Actions and decides what is due from the Pacific clock:
+
+- Saturday 9:00am PT: "poll is open" post
+- Sunday 6:00pm PT: "closes at midnight tonight" post
+- Monday 11:30am PT: publishes the weekly issue (power poll results plus stat cards) to the News tab and posts the link
+
+Preview any of it without posting by calling the function with `?dry=1`, and force a task with `?task=poll-open`, `poll-closing` or `issue`. The Actions workflow has the same options under Run workflow.
 
 ### 4. GitHub Pages
 
@@ -64,7 +70,11 @@ supabase functions deploy weekly --no-verify-jwt
 3. Settings, Secrets and variables, Actions, add `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `CRON_SECRET`.
 4. Push to `main`. The site appears at `https://YOURUSER.github.io/phi-delt-pool-league/`.
 
-The weekly recap runs from `.github/workflows/weekly.yml` every Sunday at 22:00 UTC. Poll weeks run Sunday to Saturday.
+The schedules live in `.github/workflows/weekly.yml`. They run at both the daylight and standard time UTC hours, and the function only acts once the Pacific time is reached, so each post happens once. GitHub can start scheduled runs a few minutes late.
+
+## The weekly poll
+
+The poll is open Saturday 9:00am to Sunday 11:59pm Pacific. The Weekly poll tab only shows while it is open, and the database rejects ballots outside that window. Voters pick their own name, then rank five players. A name can vote once per poll and cannot vote for itself. Ballots are private: the website can only see who has voted, never who they picked. Results are tallied by the Monday function, 5 points for first down to 1 for fifth, and published on the News tab with the next five players as "others receiving votes".
 
 ## Free tier caveats
 

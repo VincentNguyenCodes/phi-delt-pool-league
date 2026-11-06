@@ -1,94 +1,131 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { pollWeek, tally } from "../../shared/poll";
 import PlayerCombobox from "../components/PlayerCombobox";
-import Shield from "../components/Shield";
-import { addPlayer, fetchVotes, submitVote, type Player } from "../lib/data";
+import { fetchVoters, submitBallot, type Player } from "../lib/data";
+import { usePollStatus } from "../lib/usePollStatus";
 import { useLedger } from "../lib/useLedger";
 
 const SLOTS = 5;
 
-function voterToken(): string {
-  try {
-    const existing = localStorage.getItem("pdpl-voter");
-    if (existing) return existing;
-    const made = crypto.randomUUID();
-    localStorage.setItem("pdpl-voter", made);
-    return made;
-  } catch {
-    return crypto.randomUUID();
-  }
-}
-
 export default function Poll() {
-  const { ledger, names, refresh } = useLedger();
-  const week = useMemo(() => pollWeek(new Date()), []);
-  const votedKey = `pdpl-voted-${week}`;
+  const { ledger } = useLedger();
+  const status = usePollStatus();
+  const [voters, setVoters] = useState<number[]>([]);
+  const [voter, setVoter] = useState<Player | null>(null);
   const [picks, setPicks] = useState<(Player | null)[]>(Array(SLOTS).fill(null));
-  const [voted, setVoted] = useState(() => {
-    try {
-      return localStorage.getItem(votedKey) === "1";
-    } catch {
-      return false;
-    }
-  });
-  const [votes, setVotes] = useState<number[][]>([]);
+  const [done, setDone] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const loadVotes = useCallback(async () => {
+  const loadVoters = useCallback(async () => {
+    if (!status.pollId) return;
     try {
-      setVotes(await fetchVotes(week));
+      setVoters(await fetchVoters(status.pollId));
     } catch {
-      setVotes([]);
+      setVoters([]);
     }
-  }, [week]);
+  }, [status.pollId]);
 
   useEffect(() => {
-    loadVotes();
-  }, [loadVotes]);
+    loadVoters();
+  }, [loadVoters]);
 
-  const create = async (name: string) => {
-    const player = await addPlayer(name);
-    await refresh();
-    return player;
-  };
+  const eligible = useMemo(
+    () => (ledger?.players ?? []).filter((p) => !voters.includes(p.id)),
+    [ledger, voters],
+  );
+
+  if (!status.open || !status.pollId) {
+    const when = status.nextOpening.toLocaleString("en-US", {
+      weekday: "long",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "America/Los_Angeles",
+    });
+    return (
+      <main className="log">
+        <div className="eyebrow">PHI DELT / POWER POLL</div>
+        <h2 className="page-title">Poll is closed</h2>
+        <p className="tagline">
+          Voting opens every Saturday at 9:00am PT and closes Sunday at 11:59pm PT. The next poll opens {when} PT.
+          Results drop Monday at 11:30am on the News tab.
+        </p>
+      </main>
+    );
+  }
 
   const chosen = picks.filter((p): p is Player => p !== null).map((p) => p.id);
 
+  const reset = () => {
+    setVoter(null);
+    setPicks(Array(SLOTS).fill(null));
+    setDone(null);
+    setProblem(null);
+  };
+
   const submit = async () => {
     setProblem(null);
+    if (!voter) {
+      setProblem("Pick your name first.");
+      return;
+    }
     if (chosen.length < SLOTS) {
       setProblem("Pick five players.");
       return;
     }
     setSaving(true);
     try {
-      await submitVote(week, voterToken(), chosen);
-      try {
-        localStorage.setItem(votedKey, "1");
-      } catch {
-        setVoted(true);
-      }
-      setVoted(true);
-      await loadVotes();
+      await submitBallot(status.pollId!, voter.id, chosen);
+      setDone(voter.name);
+      await loadVoters();
     } catch (e) {
-      if (e instanceof Error && e.message.includes("already voted")) setVoted(true);
-      setProblem(e instanceof Error ? e.message : "Could not save your vote.");
+      setProblem(e instanceof Error ? e.message : "Could not save your ballot.");
+      await loadVoters();
     } finally {
       setSaving(false);
     }
   };
 
-  const results = useMemo(() => tally(votes), [votes]);
+  if (done) {
+    return (
+      <main className="log">
+        <div className="eyebrow">BALLOT RECEIVED</div>
+        <h2 className="result-title">Thanks, {done}. Your top 5 is in.</h2>
+        <p className="tagline">Ballots are private. Results drop Monday at 11:30am on the News tab.</p>
+        <div className="actions">
+          <button className="secondary" onClick={reset}>
+            Someone else is voting
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="log">
       <div className="eyebrow">PHI DELT / POWER POLL</div>
       <h2 className="page-title">Weekly top 5</h2>
-      <p className="tagline">Rank your five best players. Your #1 gets 5 points, your #5 gets 1. Poll {week}.</p>
+      <p className="tagline">
+        Open until Sunday 11:59pm PT. Pick your name, then rank your five best players. Your #1 gets 5 points down to 1
+        point for #5. You cannot vote for yourself, and each name votes once.
+      </p>
 
-      {!voted && (
+      <section className="side">
+        <h3>Who are you?</h3>
+        <PlayerCombobox
+          label="Your name"
+          players={eligible}
+          value={voter}
+          excluded={[]}
+          onChange={(next) => {
+            setVoter(next);
+            setPicks(Array(SLOTS).fill(null));
+          }}
+        />
+      </section>
+
+      {voter && (
         <>
+          <div className="beat">YOUR TOP 5</div>
           <section className="side">
             {picks.map((p, i) => (
               <PlayerCombobox
@@ -96,7 +133,7 @@ export default function Poll() {
                 label={`#${i + 1}`}
                 players={ledger?.players ?? []}
                 value={p}
-                excluded={chosen.filter((id) => id !== p?.id)}
+                excluded={[voter.id, ...chosen.filter((id) => id !== p?.id)]}
                 onChange={(next) =>
                   setPicks((cur) => {
                     const copy = [...cur];
@@ -104,7 +141,6 @@ export default function Poll() {
                     return copy;
                   })
                 }
-                onCreate={create}
               />
             ))}
           </section>
@@ -116,31 +152,7 @@ export default function Poll() {
           </div>
         </>
       )}
-
-      {voted && <p className="notice">Your ballot is in. Thanks for voting.</p>}
-
-      {voted && results.length > 0 && (
-        <section className="table">
-          <div className="table-head poll-head">
-            <span>RANK</span>
-            <span />
-            <span>PLAYER</span>
-            <span className="right">POINTS</span>
-          </div>
-          {results.slice(0, 10).map((t, i) => {
-            const name = names.get(String(t.id)) ?? String(t.id);
-            return (
-              <div key={t.id} className={i === 0 ? "row top poll-row" : "row poll-row"}>
-                <span className="rank">{String(i + 1).padStart(2, "0")}</span>
-                <Shield name={name} />
-                <span className="player">{name.toUpperCase()}</span>
-                <span className="elo right">{t.points}</span>
-              </div>
-            );
-          })}
-          <p className="fineprint">{votes.length} ballots so far.</p>
-        </section>
-      )}
+      {!voter && problem && <p className="problem">{problem}</p>}
     </main>
   );
 }

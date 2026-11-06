@@ -1,12 +1,19 @@
 import { postToGroupMe } from "../../../shared/groupme.ts";
-import { pollWeek, tally } from "../../../shared/poll.ts";
-import { formatPollResults, formatRecap, weeklyStats } from "../../../shared/stats.ts";
+import { buildIssue, dateLabel } from "../../../shared/news.ts";
+import {
+  addDays,
+  mondayOf,
+  pacificInstant,
+  pacificParts,
+  pollIdFor,
+  weekNumber,
+  ymd,
+} from "../../../shared/schedule.ts";
 import { adminClient, corsHeaders, json, loadNames, loadReports } from "../_shared.ts";
 
-const DAY = 86400000;
+type Task = "poll-open" | "poll-closing" | "issue";
 
-const short = (ms: number) =>
-  new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+const TASKS: Task[] = ["poll-open", "poll-closing", "issue"];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -14,34 +21,81 @@ Deno.serve(async (req) => {
   const secret = Deno.env.get("CRON_SECRET");
   if (!secret || req.headers.get("x-cron-secret") !== secret) return json({ error: "unauthorized" }, 401);
 
-  const dry = new URL(req.url).searchParams.get("dry") === "1";
+  const url = new URL(req.url);
+  const dry = url.searchParams.get("dry") === "1";
+  const forced = url.searchParams.get("task") as Task | null;
+  if (forced && !TASKS.includes(forced)) return json({ error: "unknown task" }, 400);
+
   const botId = Deno.env.get("GROUPME_BOT_ID");
-  const siteUrl = Deno.env.get("SITE_URL") ?? "";
+  const siteUrl = (Deno.env.get("SITE_URL") ?? "").replace(/\/$/, "");
   if (!dry && !botId) return json({ error: "GROUPME_BOT_ID is not set" }, 500);
 
+  const now = new Date();
+  const p = pacificParts(now);
+  const monday = mondayOf(p);
+  const weekend = pollIdFor(p) ?? ymd(addDays(monday, -2));
+
+  const due: { task: Task; key: string }[] = [];
+  if (forced === "poll-open" || (!forced && p.weekday === 6 && p.hour >= 9)) {
+    due.push({ task: "poll-open", key: `poll-open:${weekend}` });
+  }
+  if (forced === "poll-closing" || (!forced && p.weekday === 0 && p.hour >= 18)) {
+    due.push({ task: "poll-closing", key: `poll-closing:${weekend}` });
+  }
+  if (forced === "issue" || (!forced && p.weekday === 1 && (p.hour > 11 || (p.hour === 11 && p.minute >= 30)))) {
+    due.push({ task: "issue", key: `issue:${ymd(monday)}` });
+  }
+
   const db = adminClient();
-  const now = Date.now();
-  const names = await loadNames(db);
-  const reports = await loadReports(db);
-  const messages: string[] = [];
+  const results: Record<string, unknown>[] = [];
 
-  const lastWeek = pollWeek(new Date(now - 7 * DAY));
-  const votes = await db.from("poll_votes").select("picks").eq("week", lastWeek);
-  if (votes.error) return json({ error: votes.error.message }, 500);
-  if (votes.data.length > 0) {
-    const rows = tally(votes.data.map((v) => v.picks as number[])).map((t) => ({
-      name: names.get(String(t.id)) ?? String(t.id),
-      points: t.points,
-    }));
-    messages.push(formatPollResults(rows, votes.data.length, lastWeek));
+  for (const { task, key } of due) {
+    if (!dry && !forced) {
+      const claim = await db.from("bot_posts").insert({ key });
+      if (claim.error) {
+        results.push({ task, skipped: claim.error.code === "23505" ? "already done" : claim.error.message });
+        continue;
+      }
+    }
+    try {
+      let message: string;
+      if (task === "poll-open") {
+        message = `Phi Delt Power Poll is open! Vote your top 5 before Sunday 11:59pm PT: ${siteUrl}/#/poll`;
+      } else if (task === "poll-closing") {
+        message = `Last call: the Phi Delt Power Poll closes at midnight tonight. Vote your top 5: ${siteUrl}/#/poll`;
+      } else {
+        const pollId = ymd(addDays(monday, -2));
+        const votes = await db.from("poll_votes").select("picks").eq("poll", pollId);
+        if (votes.error) throw votes.error;
+        const issue = buildIssue({
+          reports: await loadReports(db),
+          names: await loadNames(db),
+          since: pacificInstant(addDays(monday, -7)).getTime(),
+          until: pacificInstant(monday).getTime(),
+          weekNumber: weekNumber(monday),
+          weekStart: ymd(monday),
+          dateLabel: dateLabel(monday.year, monday.month, monday.day),
+          pollId,
+          votes: votes.data.map((v) => v.picks as number[]),
+        });
+        if (!dry) {
+          const saved = await db
+            .from("issues")
+            .upsert({ week_start: issue.weekStart, payload: issue, published_at: now.toISOString() }, { onConflict: "week_start" });
+          if (saved.error) throw saved.error;
+        }
+        message = `Weekly AP poll and stats have dropped, check em out here: ${siteUrl}/#/news`;
+        results.push({ task, key, message, issue: dry ? issue : undefined, posted: !dry });
+        if (!dry) await postToGroupMe(botId!, message);
+        continue;
+      }
+      results.push({ task, key, message, posted: !dry });
+      if (!dry) await postToGroupMe(botId!, message);
+    } catch (e) {
+      if (!dry && !forced) await db.from("bot_posts").delete().eq("key", key);
+      results.push({ task, error: e instanceof Error ? e.message : String(e) });
+    }
   }
 
-  const since = now - 7 * DAY;
-  messages.push(formatRecap(weeklyStats(reports, since), names, `${short(since)} to ${short(now)}`));
-  messages.push(`New weekly power poll is open. Vote your top 5:\n${siteUrl}/#/poll`);
-
-  if (!dry) {
-    for (const text of messages) await postToGroupMe(botId!, text);
-  }
-  return json({ posted: !dry, messages });
+  return json({ dry, pacific: p, due: due.map((d) => d.key), results });
 });
