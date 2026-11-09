@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   addDays,
+  dueTasks,
   isPollOpen,
   mondayOf,
   nextOpening,
@@ -72,5 +73,43 @@ describe("next opening", () => {
 
   it("finds next week's Saturday after the poll closes", () => {
     expect(nextOpening(new Date("2026-11-09T09:00:00Z")).toISOString()).toBe("2026-11-14T17:00:00.000Z");
+  });
+});
+
+describe("due tasks", () => {
+  const due = (iso: string) => dueTasks(pacificParts(new Date(iso))).map((d) => d.key);
+
+  it("does nothing on a quiet weekday morning", () => {
+    expect(due("2026-11-10T15:00:00Z").filter((k) => !k.startsWith("issue"))).toEqual([]);
+    expect(due("2026-11-09T18:29:00Z")).toEqual([]);
+  });
+
+  it("opens the poll from Saturday 9am Pacific", () => {
+    expect(due("2026-11-07T16:59:00Z")).toEqual([]);
+    expect(due("2026-11-07T17:00:00Z")).toEqual(["poll-open:2026-11-07"]);
+    expect(due("2026-11-07T23:00:00Z")).toEqual(["poll-open:2026-11-07"]);
+  });
+
+  it("sends the last call from Sunday noon Pacific and stops the open post", () => {
+    expect(due("2026-11-08T19:59:00Z")).toEqual(["poll-open:2026-11-07"]);
+    expect(due("2026-11-08T20:00:00Z")).toEqual(["poll-closing:2026-11-07"]);
+    expect(due("2026-11-09T07:59:00Z")).toEqual(["poll-closing:2026-11-07"]);
+  });
+
+  it("publishes the issue from Monday 11:30am Pacific", () => {
+    expect(due("2026-11-09T19:29:00Z")).toEqual([]);
+    expect(due("2026-11-09T19:30:00Z")).toEqual(["issue:2026-11-09"]);
+    expect(due("2026-11-09T23:42:00Z")).toEqual(["issue:2026-11-09"]);
+  });
+
+  it("keeps offering a missed issue through Friday, under the same key", () => {
+    expect(due("2026-11-11T20:00:00Z")).toEqual(["issue:2026-11-09"]);
+    expect(due("2026-11-13T20:00:00Z")).toEqual(["issue:2026-11-09"]);
+    expect(due("2026-11-14T20:00:00Z")).toEqual(["poll-open:2026-11-14"]);
+  });
+
+  it("follows daylight saving", () => {
+    expect(due("2027-03-15T18:29:00Z")).toEqual([]);
+    expect(due("2027-03-15T18:30:00Z")).toEqual(["issue:2027-03-15"]);
   });
 });

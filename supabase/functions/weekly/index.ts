@@ -2,16 +2,16 @@ import { postToGroupMe } from "../../../shared/groupme.ts";
 import { buildIssue, dateLabel } from "../../../shared/news.ts";
 import {
   addDays,
+  dueTasks,
   mondayOf,
   pacificInstant,
   pacificParts,
   pollIdFor,
   weekNumber,
   ymd,
+  type Task,
 } from "../../../shared/schedule.ts";
 import { adminClient, corsHeaders, json, loadNames, loadReports } from "../_shared.ts";
-
-type Task = "poll-open" | "poll-closing" | "issue";
 
 const TASKS: Task[] = ["poll-open", "poll-closing", "issue"];
 
@@ -35,16 +35,9 @@ Deno.serve(async (req) => {
   const monday = mondayOf(p);
   const weekend = pollIdFor(p) ?? ymd(addDays(monday, -2));
 
-  const due: { task: Task; key: string }[] = [];
-  if (forced === "poll-open" || (!forced && p.weekday === 6 && p.hour >= 9)) {
-    due.push({ task: "poll-open", key: `poll-open:${weekend}` });
-  }
-  if (forced === "poll-closing" || (!forced && p.weekday === 0 && p.hour >= 18)) {
-    due.push({ task: "poll-closing", key: `poll-closing:${weekend}` });
-  }
-  if (forced === "issue" || (!forced && p.weekday === 1 && (p.hour > 11 || (p.hour === 11 && p.minute >= 30)))) {
-    due.push({ task: "issue", key: `issue:${ymd(monday)}` });
-  }
+  const due = forced
+    ? [{ task: forced, key: forced === "issue" ? `issue:${ymd(monday)}` : `${forced}:${weekend}` }]
+    : dueTasks(p);
 
   const db = adminClient();
   const results: Record<string, unknown>[] = [];

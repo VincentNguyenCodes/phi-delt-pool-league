@@ -1,10 +1,6 @@
 name: Weekly GroupMe posts
 
 on:
-  schedule:
-    - cron: "0 16,17 * * 6"
-    - cron: "0 1,2 * * 1"
-    - cron: "30 18,19 * * 1"
   workflow_dispatch:
     inputs:
       task:

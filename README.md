@@ -58,7 +58,7 @@ supabase functions deploy weekly --no-verify-jwt
 `announce` posts each logged game with rank and Elo moves. `weekly` runs from GitHub Actions and decides what is due from the Pacific clock:
 
 - Saturday 9:00am PT: "poll is open" post
-- Sunday 6:00pm PT: "closes at midnight tonight" post
+- Sunday 12:00pm PT: "closes at midnight tonight" post
 - Monday 11:30am PT: publishes the weekly issue (power poll results plus stat cards) to the News tab and posts the link
 
 Preview any of it without posting by calling the function with `?dry=1`, and force a task with `?task=poll-open`, `poll-closing` or `issue`. The Actions workflow has the same options under Run workflow.
@@ -70,11 +70,11 @@ Preview any of it without posting by calling the function with `?dry=1`, and for
 3. Settings, Secrets and variables, Actions, add `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `CRON_SECRET`.
 4. Push to `main`. The site appears at `https://YOURUSER.github.io/phi-delt-pool-league/`.
 
-The schedules live in `.github/workflows/weekly.yml`. They run at both the daylight and standard time UTC hours, and the function only acts once the Pacific time is reached, so each post happens once. GitHub can start scheduled runs a few minutes late.
+The schedule lives in the database, not in GitHub. GitHub's cron is best-effort and ran this workflow hours late (and skipped a run entirely), so `supabase/migrations/0005_schedule.sql` sets up a pg_cron job that calls the `weekly` function every 5 minutes. The function checks the Pacific clock itself, so each post goes out within about 5 minutes of its target time and exactly once, using a claim row per post. A missed Monday issue is retried until Friday. To install it, replace `__PROJECT_URL__` and `__CRON_SECRET__` in that file with your project URL and the `CRON_SECRET` value, then run it in the SQL editor. Do not commit the filled-in copy. `.github/workflows/weekly.yml` is now only a manual trigger for testing.
 
 ## The weekly poll
 
-The poll is open Saturday 9:00am to Sunday 11:59pm Pacific. The Weekly poll tab only shows while it is open, and the database rejects ballots outside that window. Voters pick their own name, then rank five players. A name can vote once per poll and cannot vote for itself. Ballots are private: the website can only see who has voted, never who they picked. Results are tallied by the Monday function, 5 points for first down to 1 for fifth, and published on the News tab with the next five players as "others receiving votes".
+The poll is open Saturday 9:00am to Sunday 11:59pm Pacific. The Weekly poll tab only shows while it is open, and the database rejects ballots outside that window. Voters pick their own name, then rank five players. A name can vote once per poll and cannot vote for itself. Ballots are private: the website can only see who has voted, never who they picked. Results are tallied by the Monday job, 5 points for first down to 1 for fifth, and published on the News tab with the next five players as "others receiving votes".
 
 ## Admin dashboard
 

@@ -99,3 +99,26 @@ export function nextOpening(now: Date): Date {
   }
   return target;
 }
+
+export type Task = "poll-open" | "poll-closing" | "issue";
+
+export interface DueTask {
+  task: Task;
+  key: string;
+}
+
+export function dueTasks(p: Parts): DueTask[] {
+  const out: DueTask[] = [];
+  const poll = pollIdFor(p);
+  if (poll && ((p.weekday === 6 && p.hour >= 9) || (p.weekday === 0 && p.hour < 12))) {
+    out.push({ task: "poll-open", key: `poll-open:${poll}` });
+  }
+  if (poll && p.weekday === 0 && p.hour >= 12) {
+    out.push({ task: "poll-closing", key: `poll-closing:${poll}` });
+  }
+  const mondayReady = p.weekday === 1 && (p.hour > 11 || (p.hour === 11 && p.minute >= 30));
+  if (mondayReady || (p.weekday >= 2 && p.weekday <= 5)) {
+    out.push({ task: "issue", key: `issue:${ymd(mondayOf(p))}` });
+  }
+  return out;
+}
