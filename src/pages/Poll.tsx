@@ -106,7 +106,7 @@ export default function Poll() {
       <h2 className="page-title">Weekly top 5</h2>
       <p className="tagline">
         Open until Sunday 11:59pm PT. Pick your name, then rank your five best players. Your #1 gets 5 points down to 1
-        point for #5. You cannot vote for yourself, and each name votes once.
+        point for #5. You can pick yourself, and each name votes once.
       </p>
 
       <section className="side">
@@ -133,7 +133,7 @@ export default function Poll() {
                 label={`#${i + 1}`}
                 players={ledger?.players ?? []}
                 value={p}
-                excluded={[voter.id, ...chosen.filter((id) => id !== p?.id)]}
+                excluded={chosen.filter((id) => id !== p?.id)}
                 onChange={(next) =>
                   setPicks((cur) => {
                     const copy = [...cur];

@@ -74,7 +74,7 @@ The schedule lives in the database, not in GitHub. GitHub's cron is best-effort 
 
 ## The weekly poll
 
-The poll is open Saturday 9:00am to Sunday 11:59pm Pacific. The Weekly poll tab only shows while it is open, and the database rejects ballots outside that window. Voters pick their own name, then rank five players. A name can vote once per poll and cannot vote for itself. Ballots are private: the website can only see who has voted, never who they picked. Results are tallied by the Monday job, 5 points for first down to 1 for fifth, and published on the News tab with the next five players as "others receiving votes".
+The poll is open Saturday 9:00am to Sunday 11:59pm Pacific. The Weekly poll tab only shows while it is open, and the database rejects ballots outside that window. Voters pick their own name, then rank five players. A name can vote once per poll, and players may rank themselves. Ballots are private: the website can only see who has voted, never who they picked. Results are tallied by the Monday job, 5 points for first down to 1 for fifth, and published on the News tab with the next five players as "others receiving votes".
 
 ## Admin dashboard
 
